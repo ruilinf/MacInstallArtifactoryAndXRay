@@ -1,0 +1,60 @@
+Artifactory自动清理存储策略
+
+Local仓库清理策略：
+1.UI设置保留制品版本数量，清理冗余版本；
+2.AQL过滤查询需要删除的制品后，进行删除操作；
+
+1. UI清理功能设置
+支持的仓库类型：Docker, Maven, Gradle, NuGet, Ivy, SBT
+设置位置：Local repo -> Basic settings -> Max Unique Snapshots(docker: Max Unique Tags)，用来设置保留最新的制品版本的数量，多余的则会自动清理；
+比如通过该配置项设置为3，那么仓库将会保留最新的三个制品，多余的被删除。另外，只对snapshot制品生效。
+
+2. AQL清理方法（docker类型不适合，其他通用）
+  a. 编写AQL查询命令，保存到test.spec文件；
+  b. JFrog CLI执行:
+    搜索：jf rt search --spec=test.spec
+    删除：jf rt del --quiet --spec=test.spec
+    ##查看参数：jf rt -h
+JFrog CLI 下载与安装：https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/install
+
+test.spec文件功能及内容示例：
+1.通过AQL命令只保留3个最新版本，删除maven-test-local仓库test/version路径下多余的release包。
+ "files": [
+    {
+      "aql": {
+        "items.find": {
+          "repo" : "maven-test-local",
+          "path" : {"$match":"test/version"},
+          "name" : {"$match":"release*.jar"}
+        }
+      },
+      "sortBy": ["repo", "name"],
+      "sortOrder": "desc",
+      "offset": 3
+    }
+
+2.通过AQL命令删除maven-test-local仓库test/version路径下2024年之前的release包
+ "files": [
+    {
+      "aql": {
+        "items.find": {
+          "repo" : "maven-test-local",
+          "path" : {"$match":"test/version"},
+          "name" : {"$match":"release*.jar"},
+          "modified" : {"$lt":"2024-1-1"}
+        }
+      },
+      "sortBy": "modified",
+      "sortOrder": "desc"
+    }
+
+AQL使用参考链接：
+https://jfrog.com/help/r/jfrog-rest-apis/artifactory-query-language
+
+Remote仓库清理不再使用的制品：
+
+UI设置：Remote repo -> Advanced Settings -> Cache(Unused Artifacts Cleanup Period)
+用来清理被认为不再使用的制品，值为0时，则表示功能未启用。
+
+Garbage Collection | Storage Quota
+UI页面：Artifactory -> Maintenance 
