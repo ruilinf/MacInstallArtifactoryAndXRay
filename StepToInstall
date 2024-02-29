@@ -1,0 +1,41 @@
+MAC M1 Install Artifactory and XRay
+
+Type: Docker-compose:
+
+###下载
+curl "https://releases.jfrog.io/artifactory/jfrog-prox/org/artifactory/pro/docker/jfrog-platform-trial-prox/[RELEASE]/jfrog-platform-trial-prox-[RELEASE]-compose.tar.gz" -L -o jfrog-compose-installer.tar.gz -g
+
+###解压
+tar -xf jfrog-compose-installer.tar.gz
+
+###
+cd jfrog-platform-trial-prox-7.77.5-compose
+
+###安装
+./config.sh
+
+###安装jq
+Intsall jq
+
+brew install jq
+
+###安装brew
+Install brew
+
+###下载文件
+/bin/zsh -c "$(curl -fsSL https://gitee.com/huwei1024/HomebrewCN/raw/master/Homebrew.sh)"
+
+###进入配置文件
+cd ~
+vim .zshrc
+open -e .zshrc
+
+###更改以下变量
+export PATH=/opt/homebrew/bin:$PATH
+export PATH=/opt/homebrew/sbin:$PATH
+
+###使生效
+source .zshrc
+
+###安装成功
+brew -v
